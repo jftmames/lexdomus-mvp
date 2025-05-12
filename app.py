@@ -1,16 +1,17 @@
 # app.py
 
 import streamlit as st
-import openai
 import os
+from openai import OpenAI
 
-# Configurar la clave API desde las variables de entorno
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Configurar clave API de OpenAI desde entorno seguro
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+client = OpenAI()
 
-# Configurar el diseño de la app
+# Configurar diseño de la app
 st.set_page_config(page_title="LexDomus MVP", layout="centered")
 
-# Título y descripción inicial
+# Título y descripción
 st.title("LexDomus MVP – Asistente jurídico deliberativo")
 st.markdown("""
 Esta aplicación analiza cláusulas de cesión de derechos utilizando inteligencia artificial explicativa.  
@@ -34,15 +35,14 @@ jurisdiccion = st.selectbox(
     options=["España", "EE.UU.", "Ambas"]
 )
 
-# Botón de análisis
+# Botón para iniciar análisis
 st.subheader("3. Iniciar análisis deliberativo")
 st.markdown("*Al pulsar, se analizará la cláusula y se propondrá una versión mejorada si es necesario.*")
 analizar = st.button("Analizar cláusula con GPT-4")
 
-# Si el usuario pulsa el botón
+# Lógica de análisis
 if analizar:
 
-    # Fragmentos legales simulados (RAG)
     contexto_legal = """
 Contexto normativo para el análisis jurídico:
 
@@ -56,7 +56,6 @@ Contexto normativo para el análisis jurídico:
 “El autor conservará el derecho de reivindicar la paternidad de la obra y de oponerse a toda deformación o modificación de la misma.”
 """
 
-    # Construcción del prompt
     prompt = f"""
 Actúa como un asistente jurídico deliberativo experto en propiedad intelectual internacional.
 
@@ -78,22 +77,20 @@ Cláusula a analizar:
 \"\"\"
 """
 
-    # Enviar el prompt a OpenAI
+    # Enviar a GPT-4 y mostrar resultado
     with st.spinner("Analizando la cláusula con GPT-4..."):
-
         try:
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.4
             )
-            resultado = response['choices'][0]['message']['content']
+            resultado = response.choices[0].message.content
 
-            # Mostrar el resultado
             st.markdown("### Resultado del análisis jurídico:")
             st.markdown(resultado)
 
-            # Enlaces explicativos
+            # Enlaces de ayuda contextual
             st.markdown("---")
             st.markdown("**¿Qué significa cada parte del análisis?**")
             st.markdown("[Subpreguntas jurídicas](https://docs.google.com/...#subpreguntas)")
