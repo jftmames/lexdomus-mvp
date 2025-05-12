@@ -4,48 +4,41 @@ import streamlit as st
 import os
 from openai import OpenAI
 
-# Configurar clave API de OpenAI desde entorno seguro
+# Configurar clave API
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 client = OpenAI()
 
-# Configurar diseño de la app
+# Configurar diseño
 st.set_page_config(page_title="LexDomus MVP", layout="centered")
 
-# Título y descripción
-st.title("LexDomus MVP – Asistente jurídico deliberativo")
-st.markdown("""
-Esta aplicación analiza cláusulas de cesión de derechos utilizando inteligencia artificial explicativa.  
-Basada en GPT-4, simula razonamiento jurídico deliberativo fundado en normativa real.
-""")
+# Título
+st.title("⚖️ LexDomus – Asistente Jurídico Deliberativo")
+st.markdown("Una aplicación basada en IA explicativa para analizar cláusulas contractuales en propiedad intelectual.")
 
-# Entrada de cláusula
-st.subheader("1. Introduce una cláusula para analizar")
-st.markdown("*¿Qué se introduce aquí? Pega una cláusula real de un contrato para analizar su validez jurídica.*")
+st.markdown("---")
+
+# Módulo 1: Entrada de cláusula
+st.header("🔍 1. Introducción de la cláusula")
+st.caption("Introduce una cláusula contractual real para su análisis.")
+st.info("💡 Esta cláusula será el punto de partida para el razonamiento jurídico automatizado.")
 clausula_usuario = st.text_area(
-    label="Cláusula contractual:",
+    "Cláusula contractual",
     height=200,
     placeholder="Ejemplo: El autor cede todos los derechos sobre la obra en todo el mundo, sin límite temporal..."
 )
 
-# Selección de jurisdicción
-st.subheader("2. Selecciona la jurisdicción aplicable")
-st.markdown("*¿Por qué elegir jurisdicción? La normativa aplicable afecta directamente a la validez de la cláusula.*")
+# Módulo 2: Selección de jurisdicción
+st.header("🌍 2. Jurisdicción aplicable")
+st.caption("Selecciona el marco legal en el que debe analizarse la cláusula.")
 jurisdiccion = st.selectbox(
-    label="Jurisdicción principal",
+    "Jurisdicción principal",
     options=["España", "EE.UU.", "Ambas"]
 )
 
-# Botón para iniciar análisis
-st.subheader("3. Iniciar análisis deliberativo")
-st.markdown("*Al pulsar, se analizará la cláusula y se propondrá una versión mejorada si es necesario.*")
-analizar = st.button("Analizar cláusula con GPT-4")
-
-# Lógica de análisis
-if analizar:
-
-    contexto_legal = """
-Contexto normativo para el análisis jurídico:
-
+# Módulo 3: Contexto legal (RAG simulado)
+st.header("📚 3. Normativa aplicada (RAG simulado)")
+st.caption("Estos son los textos legales que la IA utilizará como base para el análisis. Esto garantiza trazabilidad y evita 'alucinaciones'.")
+contexto_legal = """
 1. España – Art. 17 LPI:
 “Corresponde al autor el ejercicio exclusivo de los derechos de explotación de su obra sin más limitaciones que las establecidas por la ley.”
 
@@ -55,6 +48,16 @@ Contexto normativo para el análisis jurídico:
 3. Convenio de Berna – Art. 6bis:
 “El autor conservará el derecho de reivindicar la paternidad de la obra y de oponerse a toda deformación o modificación de la misma.”
 """
+st.code(contexto_legal, language="markdown")
+
+# Botón para lanzar análisis
+st.markdown("---")
+st.header("🚀 4. Iniciar análisis deliberativo")
+st.caption("El sistema analizará la cláusula, propondrá mejoras y evaluará el equilibrio del razonamiento.")
+analizar = st.button("Analizar cláusula con GPT-4")
+
+# Proceso de análisis
+if analizar:
 
     prompt = f"""
 Actúa como un asistente jurídico deliberativo experto en propiedad intelectual internacional.
@@ -67,8 +70,6 @@ Descompón el análisis en estos pasos:
 3. Propuesta de cláusula alternativa, si fuera necesario.
 4. Evaluación del equilibrio epistémico (pluralidad, trazabilidad y justificación).
 
-Sé claro, justifica cada paso con base normativa e indica cuándo una cláusula puede generar conflicto o nulidad.
-
 {contexto_legal}
 
 Cláusula a analizar:
@@ -77,27 +78,45 @@ Cláusula a analizar:
 \"\"\"
 """
 
-    # Enviar a GPT-4 y mostrar resultado
-    with st.spinner("Analizando la cláusula con GPT-4..."):
+    with st.spinner("⌛ Analizando la cláusula..."):
+
         try:
             response = client.chat.completions.create(
                 model="gpt-4",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.4
             )
+
             resultado = response.choices[0].message.content
 
-            st.markdown("### Resultado del análisis jurídico:")
-            st.markdown(resultado)
-
-            # Enlaces de ayuda contextual
+            # Mostrar resultado paso a paso
+            st.success("✅ Análisis completo generado.")
             st.markdown("---")
-            st.markdown("**¿Qué significa cada parte del análisis?**")
-            st.markdown("[Subpreguntas jurídicas](https://docs.google.com/...#subpreguntas)")
-            st.markdown("[Comparación normativa](https://docs.google.com/...#comparacion)")
-            st.markdown("[Validez legal](https://docs.google.com/...#validez)")
-            st.markdown("[Cláusula alternativa](https://docs.google.com/...#clausulaalternativa)")
-            st.markdown("[Evaluación epistémica (EEE)](https://docs.google.com/...#equilibrio)")
+            st.header("🧠 5. Resultado del análisis jurídico")
+
+            # Subbloques extraídos por cabeceras
+            bloques = resultado.split("###")
+
+            for bloque in bloques:
+                if "Subpreguntas" in bloque:
+                    with st.expander("🧩 Subpreguntas jurídicas"):
+                        st.caption("La IA identifica las preguntas clave necesarias para evaluar jurídicamente la cláusula.")
+                        st.markdown(bloque)
+                elif "Validez" in bloque:
+                    with st.expander("📐 Validez jurídica según jurisdicción"):
+                        st.caption("Comparación legal según la legislación seleccionada.")
+                        st.markdown(bloque)
+                elif "alternativa" in bloque or "sugerida" in bloque:
+                    with st.expander("✍️ Cláusula alternativa sugerida"):
+                        st.caption("Una propuesta de redacción más clara y jurídicamente sólida.")
+                        st.markdown(bloque)
+                elif "equilibrio" in bloque.lower():
+                    with st.expander("⚖️ Evaluación epistémica del razonamiento"):
+                        st.caption("Se valora la pluralidad, trazabilidad y justificación del análisis.")
+                        st.markdown(bloque)
+                else:
+                    with st.expander("📄 Otros contenidos"):
+                        st.markdown(bloque)
 
         except Exception as e:
-            st.error(f"Ocurrió un error al contactar con OpenAI: {str(e)}")
+            st.error(f"❌ Error al contactar con OpenAI: {str(e)}")
